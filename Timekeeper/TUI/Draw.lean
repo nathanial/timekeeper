@@ -47,7 +47,7 @@ def drawHeader (buf : Buffer) (state : AppState) (startX startY width : Nat) : B
   buf
 
 /-- Draw the timer section -/
-def drawTimer (buf : Buffer) (state : AppState) (startX startY width : Nat) : Buffer := Id.run do
+def drawTimer (buf : Buffer) (state : AppState) (startX startY _width : Nat) : Buffer := Id.run do
   let mut buf := buf
 
   match state.activeTimer with
@@ -57,23 +57,23 @@ def drawTimer (buf : Buffer) (state : AppState) (startX startY width : Nat) : Bu
     let elapsedStr := Format.durationHMS elapsed
 
     buf := buf.writeString startX startY "▶ TIMER: " (Style.bold.withFg (.ansi .green))
-    let x := startX + "▶ TIMER: ".length
+    let mut x := startX + "▶ TIMER: ".length
+
+    -- Elapsed time (next to timer label)
+    buf := buf.writeString x startY elapsedStr (Style.bold.withFg (.ansi .cyan))
+    x := x + elapsedStr.length + 2
 
     -- Description (truncate if needed)
-    let maxDescLen := width - x - elapsedStr.length - "[Category] ".length - 5
+    let maxDescLen := 30
     let desc := if timer.description.length > maxDescLen then
       timer.description.take (maxDescLen - 3) ++ "..."
     else timer.description
     buf := buf.writeString x startY desc Style.default
+    x := x + desc.length + 1
 
     -- Category
-    let catX := x + desc.length + 1
     let catStr := s!"[{timer.category}]"
-    buf := buf.writeString catX startY catStr (Style.default.withFg (categoryColor timer.category))
-
-    -- Elapsed time (right-aligned)
-    let elapsedX := startX + width - elapsedStr.length - 1
-    buf := buf.writeString elapsedX startY elapsedStr (Style.bold.withFg (.ansi .cyan))
+    buf := buf.writeString x startY catStr (Style.default.withFg (categoryColor timer.category))
 
     -- Second line: hint
     buf := buf.writeString startX (startY + 1) "  Press [s] to stop" (Style.dim)
@@ -85,18 +85,22 @@ def drawTimer (buf : Buffer) (state : AppState) (startX startY width : Nat) : Bu
 
   buf
 
+/-- Column position for duration display (aligns with Total:) -/
+def durationColumn : Nat := 53
+
 /-- Draw today's entries list -/
-def drawEntries (buf : Buffer) (state : AppState) (startX startY width height : Nat) : Buffer := Id.run do
+def drawEntries (buf : Buffer) (state : AppState) (startX startY _width height : Nat) : Buffer := Id.run do
   let mut buf := buf
   let today := state.todayEntries
 
-  -- Header
+  -- Header with total at fixed column
   let total := AppState.totalDuration today
-  let headerStr := s!"TODAY'S ENTRIES                              Total: {Format.durationShort total}"
-  buf := buf.writeString startX startY headerStr Style.bold
+  let totalStr := Format.durationShort total
+  buf := buf.writeString startX startY "TODAY'S ENTRIES" Style.bold
+  buf := buf.writeString (startX + durationColumn - 7) startY s!"Total: {totalStr}" Style.bold
 
   -- Separator
-  let sep := String.ofList (List.replicate (min width 60) '─')
+  let sep := String.ofList (List.replicate (durationColumn + 8) '─')
   buf := buf.writeString startX (startY + 1) sep (Style.dim)
 
   if today.isEmpty then
@@ -119,8 +123,7 @@ def drawEntries (buf : Buffer) (state : AppState) (startX startY width height : 
     let dur := Format.durationShort entry.duration
 
     -- Calculate available space for description
-    let fixedLen := marker.length + timeRange.length + "[Category] ".length + dur.length + 4
-    let maxDescLen := if width > fixedLen then width - fixedLen else 20
+    let maxDescLen := 25
     let desc := if entry.description.length > maxDescLen then
       entry.description.take (maxDescLen - 3) ++ "..."
     else entry.description
@@ -141,9 +144,8 @@ def drawEntries (buf : Buffer) (state : AppState) (startX startY width height : 
     let catStr := s!"[{entry.category}]"
     buf := buf.writeString x y catStr catStyle
 
-    -- Duration (right-aligned)
-    let durX := startX + width - dur.length - 1
-    buf := buf.writeString durX y dur lineStyle
+    -- Duration (aligned with Total: column)
+    buf := buf.writeString (startX + durationColumn) y dur lineStyle
 
     y := y + 1
     idx := idx + 1

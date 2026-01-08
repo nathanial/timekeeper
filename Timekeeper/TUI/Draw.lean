@@ -396,10 +396,16 @@ def drawReports (buf : Buffer) (state : AppState) (startX startY width height : 
 
   buf
 
+/-- Maximum width for the UI (keeps it readable on wide terminals) -/
+def maxWidth : Nat := 80
+
 /-- Main draw function -/
 def draw (frame : Frame) (state : AppState) : Frame := Id.run do
   let area := frame.area
   let mut buf := frame.buffer
+
+  -- Constrain width to maxWidth for readability
+  let width := min area.width maxWidth
 
   -- Layout: Header (1) | Timer (3) | Entries (fill) | Summary (6) | Footer (1)
   let headerY := area.y
@@ -411,35 +417,35 @@ def draw (frame : Frame) (state : AppState) : Frame := Id.run do
   let entriesHeight := summaryY - entriesY
 
   -- Always draw header
-  buf := drawHeader buf state area.x headerY area.width
+  buf := drawHeader buf state area.x headerY width
 
   -- Draw based on view mode
   match state.viewMode with
   | .dashboard =>
-    buf := drawTimer buf state area.x timerY area.width
-    buf := drawEntries buf state area.x entriesY area.width entriesHeight
-    buf := drawSummary buf state area.x summaryY area.width
-    buf := drawFooter buf state area.x footerY area.width
+    buf := drawTimer buf state area.x timerY width
+    buf := drawEntries buf state area.x entriesY width entriesHeight
+    buf := drawSummary buf state area.x summaryY width
+    buf := drawFooter buf state area.x footerY width
 
   | .reports =>
-    buf := drawReports buf state area.x timerY area.width (area.height - 4)
-    buf := drawFooter buf state area.x footerY area.width
+    buf := drawReports buf state area.x timerY width (area.height - 4)
+    buf := drawFooter buf state area.x footerY width
 
   | .startTimer =>
-    buf := drawStartTimerForm buf state area.x timerY area.width
-    buf := drawFooter buf state area.x footerY area.width
+    buf := drawStartTimerForm buf state area.x timerY width
+    buf := drawFooter buf state area.x footerY width
 
   | .addEntry =>
-    buf := drawAddEntryForm buf state area.x timerY area.width
-    buf := drawFooter buf state area.x footerY area.width
+    buf := drawAddEntryForm buf state area.x timerY width
+    buf := drawFooter buf state area.x footerY width
 
   | .editEntry =>
     buf := drawEditEntryForm buf state area.x timerY
-    buf := drawFooter buf state area.x footerY area.width
+    buf := drawFooter buf state area.x footerY width
 
   | .confirmDelete =>
     buf := drawConfirmDelete buf state area.x timerY
-    buf := drawFooter buf state area.x footerY area.width
+    buf := drawFooter buf state area.x footerY width
 
   { frame with buffer := buf }
 

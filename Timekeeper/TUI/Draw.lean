@@ -207,9 +207,9 @@ def drawFooter (buf : Buffer) (state : AppState) (startX startY width : Nat) : B
       else
         "[Enter] Start  [Tab] Reports  [a] Add  [e] Edit  [d] Delete  [q] Quit"
     | .reports => "[Tab] Dashboard  [t] Toggle Mode  [←/→] Navigate  [q] Quit"
-    | .startTimer => "[Tab] Switch Field  [Enter] Start  [Esc] Cancel"
-    | .addEntry => "[Tab] Switch Field  [Ctrl+S] Save  [Esc] Cancel"
-    | .editEntry => "[Tab] Switch Field  [Ctrl+S] Save  [Esc] Cancel"
+    | .startTimer => "[Tab/↓] Next Field  [↑] Prev Field  [Enter] Start  [Esc] Cancel"
+    | .addEntry => "[Tab/↓] Next Field  [↑] Prev Field  [Enter] Save  [Esc] Cancel"
+    | .editEntry => "[Tab/↓] Next Field  [↑] Prev Field  [Enter] Save  [Esc] Cancel"
     | .confirmDelete => "[y/Enter] Confirm  [n/Esc] Cancel"
 
   buf := buf.writeString startX startY hints (Style.dim)

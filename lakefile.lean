@@ -11,6 +11,7 @@ package timekeeper where
 require terminus from "../../graphics/terminus"
 require chronos from "../../util/chronos"
 require staple from "../../util/staple"
+require ledger from "../../data/ledger"
 require crucible from "../../testing/crucible"
 
 @[default_target]

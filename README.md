@@ -9,7 +9,7 @@ A terminal-based time tracking application built with [Lean 4](https://lean-lang
 - View today's entries with duration summaries
 - Add, edit, and delete manual time entries
 - Daily/weekly reports with category breakdowns
-- Persistent JSON storage (~/.config/timekeeper/data.json)
+- Ledger-backed JSONL storage (~/.config/timekeeper/ledger.jsonl)
 
 ## Requirements
 
@@ -61,14 +61,16 @@ lake test
 ### Forms
 | Key | Action |
 |-----|--------|
-| `Tab` | Next field |
+| `Tab` / `Down` | Next field |
+| `Up` | Previous field |
 | `Left` / `Right` | Change category |
-| `Enter` / `Ctrl+S` | Save |
+| `Enter` | Save |
 | `Esc` | Cancel |
 
 ## Data Storage
 
-Time entries are stored in JSON format at `~/.config/timekeeper/data.json`.
+Time entries are stored in a Ledger JSONL journal at `~/.config/timekeeper/ledger.jsonl`.
+On first run, existing `data.json` files are automatically migrated into the Ledger journal.
 
 ## Dependencies
 

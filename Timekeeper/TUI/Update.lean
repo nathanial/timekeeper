@@ -149,11 +149,10 @@ def updateStartTimer (state : AppState) (key : KeyEvent) : UpdateResult :=
     { state := state.cancelForm, shouldQuit := false, pendingAction := .none }
 
   -- Tab: switch between description and category
-  | .tab =>
-    if key.modifiers.shift then
-      { state := state.updateForm FormState.prevTimerField, shouldQuit := false, pendingAction := .none }
-    else
-      { state := state.updateForm FormState.nextTimerField, shouldQuit := false, pendingAction := .none }
+  | .tab | .down =>
+    { state := state.updateForm FormState.nextTimerField, shouldQuit := false, pendingAction := .none }
+  | .up =>
+    { state := state.updateForm FormState.prevTimerField, shouldQuit := false, pendingAction := .none }
 
   -- Enter: start the timer
   | .enter =>
@@ -176,25 +175,21 @@ def updateAddEntry (state : AppState) (key : KeyEvent) : UpdateResult :=
     { state := state.cancelForm, shouldQuit := false, pendingAction := .none }
 
   -- Tab: cycle through fields
-  | .tab =>
-    if key.modifiers.shift then
-      { state := state.updateForm FormState.prevField, shouldQuit := false, pendingAction := .none }
-    else
-      { state := state.updateForm FormState.nextField, shouldQuit := false, pendingAction := .none }
+  | .tab | .down =>
+    { state := state.updateForm FormState.nextField, shouldQuit := false, pendingAction := .none }
+  | .up =>
+    { state := state.updateForm FormState.prevField, shouldQuit := false, pendingAction := .none }
 
-  -- Ctrl+S: save entry
-  | .char 's' =>
-    if key.modifiers.ctrl then
-      let form := state.formState
-      if form.isManualEntryValid then
-        { state := state.setStatus "Creating entry..."
-          shouldQuit := false
-          pendingAction := .createEntry form.description.text.trim form.category
-            form.startTime.text.trim form.endTime.text.trim }
-      else
-        { state := state.setError "All fields required", shouldQuit := false, pendingAction := .none }
+  -- Enter: save entry
+  | .enter =>
+    let form := state.formState
+    if form.isManualEntryValid then
+      { state := state.setStatus "Creating entry..."
+        shouldQuit := false
+        pendingAction := .createEntry form.description.text.trim form.category
+          form.startTime.text.trim form.endTime.text.trim }
     else
-      { state := handleTextInput state key, shouldQuit := false, pendingAction := .none }
+      { state := state.setError "All fields required", shouldQuit := false, pendingAction := .none }
 
   -- Text input
   | _ => { state := handleTextInput state key, shouldQuit := false, pendingAction := .none }
@@ -207,28 +202,24 @@ def updateEditEntry (state : AppState) (key : KeyEvent) : UpdateResult :=
     { state := state.cancelForm, shouldQuit := false, pendingAction := .none }
 
   -- Tab: cycle through description and category only
-  | .tab =>
-    if key.modifiers.shift then
-      { state := state.updateForm FormState.prevTimerField, shouldQuit := false, pendingAction := .none }
-    else
-      { state := state.updateForm FormState.nextTimerField, shouldQuit := false, pendingAction := .none }
+  | .tab | .down =>
+    { state := state.updateForm FormState.nextTimerField, shouldQuit := false, pendingAction := .none }
+  | .up =>
+    { state := state.updateForm FormState.prevTimerField, shouldQuit := false, pendingAction := .none }
 
-  -- Ctrl+S: save changes
-  | .char 's' =>
-    if key.modifiers.ctrl then
-      let form := state.formState
-      match form.editingEntryId with
-      | some id =>
-        if form.isValid then
-          { state := state.setStatus "Updating entry..."
-            shouldQuit := false
-            pendingAction := .updateEntry id form.description.text.trim form.category }
-        else
-          { state := state.setError "Description required", shouldQuit := false, pendingAction := .none }
-      | none =>
-        { state := state.cancelForm, shouldQuit := false, pendingAction := .none }
-    else
-      { state := handleTextInput state key, shouldQuit := false, pendingAction := .none }
+  -- Enter: save changes
+  | .enter =>
+    let form := state.formState
+    match form.editingEntryId with
+    | some id =>
+      if form.isValid then
+        { state := state.setStatus "Updating entry..."
+          shouldQuit := false
+          pendingAction := .updateEntry id form.description.text.trim form.category }
+      else
+        { state := state.setError "Description required", shouldQuit := false, pendingAction := .none }
+    | none =>
+      { state := state.cancelForm, shouldQuit := false, pendingAction := .none }
 
   -- Text input
   | _ => { state := handleTextInput state key, shouldQuit := false, pendingAction := .none }

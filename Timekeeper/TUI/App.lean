@@ -56,6 +56,7 @@ def processPendingAction (state : AppState) (action : PendingAction) : IO AppSta
       formState := FormState.empty
       statusMessage := "Timer started"
       errorMessage := ""
+      nowMs := nowMs
     }
     -- Save data
     let data : AppData := {
@@ -88,6 +89,7 @@ def processPendingAction (state : AppState) (action : PendingAction) : IO AppSta
         viewMode := .dashboard
         statusMessage := s!"Logged {Format.durationShort duration}"
         errorMessage := ""
+        nowMs := nowMs
       }
       -- Save data
       let data : AppData := {

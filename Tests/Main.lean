@@ -26,6 +26,4 @@ test "formatDurationShort shows just minutes" := do
 test "formatDurationShort shows seconds for short durations" := do
   Timekeeper.Format.durationShort 45 ≡ "45s"
 
-#generate_tests
-
 def main (args : List String) : IO UInt32 := runAllSuitesFiltered args
